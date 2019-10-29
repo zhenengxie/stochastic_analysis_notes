@@ -1,0 +1,419 @@
+\documentclass{scrreprt}
+
+\usepackage{mathshort2}
+\usepackage{amsthm}
+\usepackage{varioref}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+\usepackage{mdframed}
+
+\newtheoremstyle{mydefn}% name of the style to be used
+  {\topsep}% measure of space to leave above the theorem. E.g.: 3pt
+  {\topsep}% measure of space to leave below the theorem. E.g.: 3pt
+  {}% name of font to use in the body of the theorem
+  {0pt}% measure of space to indent
+  {\bfseries}% name of head font
+  {. }% punctuation between head and body
+  { }% space after theorem head; " " = normal interword space
+  {\thmname{#1}\thmnumber{ #2}\thmnote{ (#3)}}
+
+\theoremstyle{mydefn}
+
+\newtheorem{defn}{Definition}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{prop}{Proposition}
+\newtheorem{corollary}{Corollary}
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\mdfdefinestyle{MyFrame}{
+	topline=false,
+	rightline=false,
+	leftline=true,
+	bottomline=false,
+	linewidth=0.05em,
+	innertopmargin=0,
+	innerbottommargin=0,
+	leftmargin=\parindent
+}
+
+\surroundwithmdframed[style=MyFrame]{defn}
+\surroundwithmdframed[style=MyFrame]{theorem}
+\surroundwithmdframed[style=MyFrame]{prop}
+\surroundwithmdframed[style=MyFrame]{corollary}
+
+\newcommand{\caglad}{c\`agl\`ad}
+\newcommand{\simpro}{\mathbf S}
+\newcommand{\cadspace}{\mathbb D}
+\newcommand{\cagspace}{\mathbb L}
+\newcommand{\ucp}{\text{ucp}}
+\newcommand{\filtspace}{(\Omega, \calF, (\calF_t)_{t \geq 0}, \prob)}
+\newcommand{\bdd}{\text{b}}
+\DeclareMathOperator{\TV}{TV}
+\newcommand\defeq{:=}
+
+\title{Advanced Topics in Stochastic Calculus}
+\author{Based on lectures by Dr.\ Andreas Sojmark}
+
+\begin{document}
+
+\maketitle
+
+\clearpage\mbox{}\clearpage
+
+\tableofcontents
+
+\chapter{Stochastic Integration with Jumps}
+
+Stochastic integration is often introduced by working with continuous processes. Such processes have a lot of nice properties, but in the real world a lot of process you want to integrate against have discontinuities. First let's put aside the probability aspect and recall the possible types of discontinuities a function $\R \to \R$ can have.
+
+\begin{defn}
+	Let $f: \R \to \R$ be discontinuous at $x \in \R$. We use the notation
+	\begin{equation}
+		f(x-) \defeq \lim_{t \uparrow x} f(t) \quad \text{and} \quad
+		f(x+) \defeq \lim_{t \downarrow x} f(t)
+	\end{equation}
+	when these limits exist. Then we say
+	\begin{enumerate}
+		\item $f$ has an \emph{essential discontinuity} at $x$ if at least of one $f(x+)$ or $f(x-)$ does not exist or is infinite.
+		\item $f$ has a \emph{jump discontinuity} at $x$ if $f(x+)$ and $f(x-)$ both exist and are finite but $f(x-) \neq f(x+)$.
+		\item $f$ has a \emph{removable discontinuity} at $x$ if $f(x+)$ and $f(x-)$ both exist and are finite and $f(x-) = f(x+)$.
+	\end{enumerate}
+\end{defn}
+
+We might as well pretend removable discontinuities don't exist, we can make $f$ continuous just by changing the value of $f$ at the discontinuity. Allowing essential discontinuities would mean working with all manner of horrendous functions, so we'll ignore them also. This leaves us with functions having jump discontinuities, which is what we're really interested in anyway.
+
+\section{C\`adl\`ag Functions}
+
+Consider $f: [0, \infty) \to \R$ such that $f$ has only jump discontinuities. Commonly we'll want $f$ to be the equal to the left or right limit at the discontinuity in order to make $f$ left or right continuous.
+
+\begin{defn}
+	A function $f: [0, \infty) \to \R$ is \emph{\cadlag{}} if it is right-continuous with finite left limits. For such a process the \emph{jump size} can be defined as
+	\begin{equation}
+		\Delta f(t) \defeq f(t) - f(t-).
+	\end{equation}
+	Similarly $f$ is \emph{c\`agl\`ad} if it is left-continuous with finite right limits, with
+	\begin{equation}
+		\Delta f(t) \defeq f(t+) - f(t).
+	\end{equation}
+\end{defn}
+
+We now ask how far away a \cadlag{} function is from being a continuous function. This following proposition gives what can be considered a weaker version of uniform continuity for a \cadlag{} function on $[0, t]$.
+
+\begin{prop}
+	\label{prop:jump-mesh}
+	Consider $f: [0, \infty) \to \R$. Fix $t \geq 0$ and $\epsilon > 0$. Then exists a partition $\Pi_{\epsilon}^t = \{t_0, \ldots, t_{k(\epsilon, t)}\}$ of $[0, t]$ such that
+	\begin{enumerate}
+		\item if $f$ has only jump discontinuities
+			\begin{equation}
+				\label{eq:part-condition}
+				\sup_{r, s \in (t_i, t_{i+1})} \abs{f(s) - f(r)} \leq \epsilon
+				\quad \forall i = 0, \ldots, t_{k(\epsilon, t)}
+			\end{equation}
+		\item if $f$ is \cadlag{}
+			\begin{equation}
+				\sup_{r, s \in [t_i, t_{i+1})} \abs{f(s) - f(r)} \leq \epsilon
+				\quad \forall i = 0, \ldots, t_{k(\epsilon, t)}
+			\end{equation}
+		\item if $f$ is \caglad{}
+			\begin{equation}
+				\sup_{r, s \in (t_i, t_{i+1}]} \abs{f(s) - f(r)} \leq \epsilon
+				\quad \forall i = 0, \ldots, t_{k(\epsilon, t)}
+			\end{equation}
+	\end{enumerate}
+\end{prop}
+
+
+For a uniformly continuous function we could just specify a maximum mesh size rather than a specific partition. But when we have jumps, we need to make sure the jumps are positioned at the end points of some partition. This is why the supremum in \vref{eq:part-condition} uses an open interval. With \cadlag{} and \caglad{} functions we have additional continuity assumptions that can be incorparated by making left or right side of the interval closed respectively.
+
+\begin{proof}
+	Suppose that $f$ has only jump discontinuities. For any $x \in (0, \infty)$, by existence of left limits there exists $x^- < x$ such that
+	\begin{equation}
+		\forall s \in (x^-, x),\ \abs{f(t-) - f(s)} < \tfrac{1}{2} \epsilon \implies
+		\forall r, s \in (x^-, x),\ \abs{f(r) - f(s)} < \epsilon.
+	\end{equation}
+	For any $x \in [0, \infty)$, by existence of right limits there exists $x^+ > x$ such that 
+	\begin{equation}
+		\forall s \in (x, x^+),\ \abs{f(s) - f(t+)} < \tfrac{1}{2} \epsilon \implies
+		\forall r, s \in (x, x^+),\ \abs{f(r) - f(s)} < \epsilon.
+	\end{equation}
+	Then $\calU \defeq \{[0, 0^+)\} \cup \{(x^-, x^+) : t \in (0, t]\}$ is an open cover of $[0, t]$. By compactness this has a finite subcover $\calU' \defeq \{[0, 0^+)\} \cup \{((x_i^-, x_i^+) : i = 1, \ldots, k\}$. WLOG 
+	\begin{equation}
+		a = x_0 < x_1 < \cdots < x_k = b.
+	\end{equation}
+	Since $\calU'$ covers $[a, b]$, we must have $x_i^- < x_{i-1}^+$ for all $i = 1, \ldots, k$. Therefore we can pick $y_i \in (x_i^-, x_{i-1}^+) \cap (x_{i-1}, x_i)$. Then $\{x_0, y_1, x_1, \ldots, y_k, x_k\}$ is a partition satsifying \vref{prop:jump-mesh}.
+
+	If further $f$ is \cadlag{} then 
+	\begin{equation}
+		\sup_{r, s \in (t_i, t_{i+1})} \abs{f(r) - f(s)} =
+		\sup_{r, s \in [t_i, t_{i+1})} \abs{f(r) - f(s)}
+	\end{equation}
+	thus the result follows from the result follows. The case where $f$ is \caglad{} follows similarly.
+\end{proof}
+
+Importantly \vref{prop:jump-mesh} shows that \cadlag{} or \caglad{} functions are locally bounded.
+
+\begin{corollary}
+	Suppose $f: [0, \infty) \to \R$ is \cadlag{} or \caglad{}. Then for all $t \geq 0$, $\sup_{s \leq t} \abs{f(s)} < \infty$.
+\end{corollary}
+
+\begin{proof}
+	WLOG $f$ is \caglad{} and for any $\epsilon > 0$ let $\{t_1, \ldots, t_k\}$ be a mesh as in \vref{prop:jump-mesh}. Then we have
+	\begin{equation}
+		\sup_{s \leq t} \abs{f(s)} \leq k \epsilon + \sum_{i=1}^k \Delta f(t_i) < \infty.
+	\end{equation}
+\end{proof}
+
+Another key corollary of \vref{prop:jump-mesh} is that it allows us to bound the number of jumps that $f$ will make.
+
+\begin{corollary}
+	\label{cor:countable-jumps}
+	Suppose $f:[0, \infty) \to \R$ has only jump discontinuities. Then on any finite interval $[0, t]$ and $\forall \epsilon > 0$, $f$ has finitely many discontinuities of size greater than $\epsilon$. In particular $f$ has only countably many discontinuities.
+\end{corollary}
+
+Since $f$ has countably many jumps, the sum
+\begin{equation}
+	\sum_{0 \leq s \leq t} \abs{\Delta f(s)}
+\end{equation}
+actually makes sense (the order of summation does not matter since the summands are non-negative). Thus it makes sense to talk about the total length of jumps a \cadlag{} or \caglad{} function makes. The following proposition bounds that length.
+
+\begin{prop}
+	If $f: [0, \infty) \to \R$ is of finite variation and \cadlag{} or c\`agl\`ad. Then 
+	\begin{equation}
+		\sum_{0 \leq s \leq t} \abs{\Delta f(s)} \leq \TV_{[0, t]}(f)
+	\end{equation}
+	where $\TV_{[0, t]}(f)$ is the total variation of $f$ on $[0, r]$.
+\end{prop}
+
+\section{Semimartingales and Simples Stochastic Integrals}
+
+Now we bring back the probability space. Throughout this section let $\filtspace$ be the underlying filtered probability space, unless specified otherwise all processes are functions $\Omega \times [0, \infty) \to \R$. We first make some obvious definitions and set up some notation.
+
+\begin{defn}
+	$X$ is a \emph{\cadlag{} process} if $X$ is has \cadlag{} sample paths $t \mapsto X_t(\omega)$. Let $\D$ denote the space of \cadlag{} processes and $\bdd \D$ denote the space of bounded \cadlag{} processes.
+\end{defn}
+
+\begin{defn}
+	$X$ is a \emph{\caglad{} process} if $X$ is has \caglad{} sample paths $t \mapsto X_t(\omega)$. Let $\mathbb L$ denote the space of \caglad{} processes and $\bdd \mathbb L$ denote the space of bounded \caglad{} processes.
+\end{defn}
+
+\begin{remark}
+	Some sources assume adaptability in the definition of a \caglad{} and \caglad{} process. While we will try and explicitly say when a process is adapted, unless it's explicilty said otherwise it's usually safe to assume adaptedness.
+\end{remark}
+
+Next we define the space of (simple) integrands.
+
+\begin{defn}
+	A process $H: [0, \infty) \times \Omega \to \R$ is a \emph{simple predictable process} if $H$ is of the form
+	\begin{equation}
+		\label{eq:simpro-form}
+		H_t = H_0(\omega) \indi_{\{0\}}(t) + \sum_{i=1}^n H_i(\omega) \indi_{(\tau_i, \tau_{i+1}]}(t)
+	\end{equation}
+	where $0 = \tau_1 \leq \cdots \leq \tau_{n+1} < \infty$ are finite stopping times and $H_i \in L^{\infty}(\Omega, \calF_{\tau_i}, \prob)$. Let $\simpro$ denote the space of all simple stochastic integrands. $\simpro_u$ refers to the space $\simpro$ with norm
+	\begin{equation}
+		\norm{H}_u = \sup\{H_t(\omega) : (t, \omega) \in [0, \infty) \times \Omega\}.
+	\end{equation}
+\end{defn}
+
+\begin{remark}
+	All process $H \in \simpro$ are \caglad{}. An important property of such processes is that they are \emph{previsible}. To understand what this means consider the $\sigma$-algebra defined by
+	\begin{equation}
+		\calP \defeq \sigma(\{A \times (s, t] : s, t \geq 0, s \leq t, A \in \calF_s\}).
+	\end{equation}
+	This called the \emph{previsible $\sigma$-algebra}. $H$ is previsible in that it is measurable with respect to the previsble $\sigma$-algebra. In fact it is unnecessary to assume that the right limits exist to show previsibility, we only need left continuity and adaptedness.
+\end{remark}
+
+To begin with, we'll start by defining the integral of these simple processes. Then we'll extend the definition to a wider array of processes by density and continuity arguments. Also to begin with, we'll define integrals from $t = 0$ to $t = \infty$. Because of this the integral will be a random variable instead of a random process. In particular for simple integrands the integral belongs to the following space.
+
+\begin{defn}
+	Let $\mathbf L^0$ be the space of bounded random variables with topology defined by convergence in probability.
+\end{defn}
+
+Everything is now in place to define what the integral is.
+
+\begin{defn}
+	Given a process $X$, the \emph{(simple) integral} is the linear operator $I_X : \simpro_u \to \mathbf L^0$ where (assuming $H$ takes the form in \vref{eq:simpro-form})
+	\begin{equation}
+		 I_X(H) \defeq \int_0^{\infty} H(t) \dif X(t) \defeq H_0 X_0 + \sum_{i=0}^n H_i (X_{\tau_{i+1}} - X_{\tau_i}).
+	\end{equation}
+\end{defn}
+
+The above definition works for any process $X$, but in order to extend the definition of the integral using density arguements we will need the operator $I_X$ to be continuous. This places restrictions on which \cadlag{} processes we can integrate against. In particular we will only integrate agains \emph{total semimartingales}, as defined below.
+
+\begin{defn}
+	An process $X$ is a \emph{total semimartingale} if $X$ is adapted and $I_X : \mathbf S_u \to \mathbf L_0$ is continuous.
+\end{defn}
+
+Now we define the integral up to a finite time $t \in [0, \infty)$. This is done by stopping the process we are integrating against. We will use the notation $(X^T_t)_{t \geq 0}$ for the stopped process $(X_{T \wedge t})_{t \geq 0}$.
+
+\begin{defn}
+	Given a process $X$, the \emph{(simple) integral} is given by $J_X: \calS \to \cadspace$ where
+	\begin{equation}
+		\int_0^t H(t) \dif X(t) \defeq I_{X^t}(H).
+	\end{equation}
+\end{defn}
+
+Correspondingly we no longer need $I_X$ to be continuous, just $I_{X^t}$ for all finite times $t \in [0, \infty)$. This gives rise the the concept of \emph{semimartingales}.
+
+\begin{defn}
+	An process $X$ is a \emph{semimartingale} if $X$ is adapted and $X^t$, the stopped process at time $t$, is a total semimartingale for all $t \geq 0$.
+\end{defn}
+\begin{remark}
+	The class of semimartingales is a vector space since for processes $X, Y$ and $\mu, \nu \in \R$ we have $I_{\mu X + \lambda Y} = \mu I_X + \lambda I_Y$.
+\end{remark}
+
+This looks remarkable like the localisation condition given for local martingales, just with deterministic times instead of stopping times. Is there any value in defining a local semimartingale, i.e.\ a process that is a semimartingale when stopped on a specific sequence of stopping times almost surely converging to infinity? The answer is no, and this is since the definition of semimartingales is already localised. We now prove this formally.
+
+\begin{prop}
+	\label{prop:semi-locality}
+	Let $X$ be an adapted process and $(T_m)$ be a sequence of non-negative random variables such that $T_m \to \infty$ almost surely. Suppose that $X^{T_m}$ is a semimartingale for all $m$. Then $X$ is a semimartingale.
+\end{prop}
+\begin{proof}
+	Suppose that $\norm{H^{(n)}}_u \to 0$ where $H^{(n)} \in \simpro_u$. Note on the event $T_m \leq t$ we have $X^t = (X^{T_m})^t$. Therefore for any $\epsilon > 0$ and $m \in \N$
+	\begin{align}
+		\prob(\abs{I_{X^t}(H^{(n)})} \geq \epsilon)
+		&\leq \prob(\abs{I_{(X^{T_m})^t}(H^{(n)})} \geq \epsilon, T_m \leq t) \nonumber \\
+		& \qquad + \prob(\abs{I_{X^t}(H^{(n)})} \geq \epsilon, T_m > t) \\
+		&\leq \prob(\abs{I_{(X^{T_m})^t}(H^{(n)}} \geq \epsilon) + \prob(T_m > t) .
+	\end{align}
+	For any $\delta > 0$ since $T_m \to \infty$ a.s.\ there exists a $m_0$ such that $\prob(T_{m_0} > t) < \delta$. Therefore
+	\begin{align}
+		\limsup_{n \to \infty} \prob(\abs{I_{X^t}(H^{(n)})} \geq \epsilon)
+		&\leq \limsup_{n \to \infty} \prob(\abs{I_{(X^{T_{m_0}})^t}(H^{(n)})} \geq \epsilon) + \delta \\
+		=\delta
+	\end{align}
+	since $X^{T_{m_0}}$ is a semimartingale. Since $\delta$ is arbitrary, this shows $I_{X^t}(H^{(n)}) \to 0$ in probability, hence $X$ is a semimartingale.
+\end{proof}
+
+Now we show $J_X$ is actually continuous.
+
+\begin{thm}
+	If $X$ is a semimartingale then $J_X: \simpro_{\ucp} \to \cadspace_{\ucp}$ is continuous.
+\end{thm}
+\begin{proof}
+	See lecture notes
+\end{proof}
+So what kind of processes are semimartingales? We'll give some classes of processes that are always semimartingales.
+
+\begin{prop}
+	\label{prop:semi-examples}
+	Suppose that $X$ is an \cadlag{} adapted process.
+	\begin{enumerate}
+		\item If $X$ is constant then $X$ is a semimartingale
+		\item If $X$ is of finite variation then $X$ is a semimartingale
+		\item If $X$ is a local martingale then $X$ is a semimartingale
+	\end{enumerate}
+\end{prop}
+
+\begin{proof}
+	Suppose that $H^{(k)} \in \simpro_u$ and $\norm{H^{(k)}}_u \to 0$ as $n \to \infty$.
+
+	\emph{Part (1)}: If $X$ is constant then $I_{X^t}(H^{(k)}) = H_0^{(k)} X_0$ which will converge to 0 almost surely as $n \to \infty$ and hence in probability. Thus $X$ is a semimartingale.
+
+	\emph{Part (2)}: Suppose $X$ is of finite variation. Since constant processes are semimartingales and semimartingales are vector spaces, we can assume $X_0 = 0$ by subtracting off the initial value. Then $\abs{I_{X^t}(H^{(k)})} \leq \norm{H^{(k)}}_u \TV_{[0,t]}(X) \to 0$ almost surely and thus in probability.
+
+	\emph{Part (3)}: First suppose $X$ is a martingale bounded by $M > 0$. Like for finite variation processes, WLOG $X_0 = 0$. Then
+	\begin{equation}
+		\E[ I_{X^t}(H^{(k)})^2 ]
+		= \sum_{i, j} \E[H_i H_j (X^t_{\tau_{i+1}} - X^t_{\tau_i})(X^t_{\tau_{j+1}} - X^t_{\tau_j})].
+	\end{equation}
+	If $i < j$, then $H_i, H_j, (X^t_{\tau_{i+1}} - X^t_{\tau_i})$ and $X^t_{\tau_j}$ are $\calF_{\tau_j}$ measurable. Therefore
+	\begin{align}
+		&\E[H_i H_j (X^t_{\tau_{i+1}} - X^t_{\tau_i})(X^t_{\tau_{j+1}} - X^t_{\tau_j})] \nonumber \\
+		=& \E[H_i H_j (X^t_{\tau_{i+1}} - X^t_{\tau_i})\E[X^t_{\tau_{j+1}} - X^t_{\tau_j} \mid \calF_{\tau_j}]]
+		= 0
+	\end{align}
+	by the martinagle property of $X^t$. Thus the cross terms die out and we have
+	\begin{align}
+		\E[ I_X^t(H^{(k)})^2 ]
+		&= \sum_{i} \E[H_i^2 (X^t_{\tau_{i+1}} - X^t_{\tau_i})^2] \\
+		&\leq \norm{H}_u^2 \sum_i \E[(X^t_{\tau_{i+1}} - X^t_{\tau_i})^2] 
+		= \norm{H}_u^2 \E[(X^t_{\tau_n})^2]  \\
+		&\leq M^2 \norm{H}_u^2 \quad \text{as $n \to \infty$}.
+	\end{align}
+	Since we have $L^2$ convergence, we will have convergence in probability. Therefore $X$ is a semimartingale. For a general \cadlag{} local martingale $X$, since \cadlag{} paths are locally bounded we can localise $X$ to a bounded martingale. Thus $X$ is a semimartingale by \vref{prop:semi-locality}.
+\end{proof}
+
+If you've done a past course on stochastic analysis, you'll have seen a different definition of a semi-martingale which we will now give.
+
+\begin{defn}
+	A process $X$ is a \emph{classical semimartingale} or \emph{decomposable} if there exists a local martingale $M$, a finite variation process $N$ and $X_0 \in \calF_0$ such that $M_0 = N_0 = 0$ and
+	\begin{equation}
+		X_t = X_0 + M_t + N_t.
+	\end{equation}
+\end{defn}
+
+From \vref{prop:semi-examples} and the fact that set of semimartingales is a vector space, we know that decomposable processes are semimartingales. It turns out the converse is also true!
+
+\begin{prop}
+	Suppose $X$ is a \cadlag{} adapted process. Then $X$ is a semimartingale if and only if $X$ is decomposable.
+\end{prop}
+
+The converse direction is much harder to prove, and can be found in Protter's book `Stochastic Integration and Differential Equations'.
+
+\section{Integrating}
+
+\begin{defn}
+	A sequence of process $H^{(n)}$ converges \emph{uniformly on compact sets in probability} (u.c.p.) to $H$
+	\begin{equation}
+		\abs{H^n - H}^*_t \to H \quad \text{where}\ \abs{X}^*_t \defeq \sup_{s \leq t} \abs{X_s}.
+	\end{equation}
+\end{defn}
+\begin{remark}
+	The topology of u.c.p.\ convergence can be characteristed by the metric
+	\begin{equation}
+		d(H, G) \defeq \sum_{n=1}^{\infty} 2^{-n} \E[\abs{H - G}_n^* \wedge 1].
+	\end{equation}
+	We write $\cadspace_{\ucp}$ for the space $\cadspace$ equipped with the topology of u.c.p.\ convergence, and similarly for other space of processes. $\cadspace_{\ucp}$ and $\cagspace_{\ucp}$ are complete metric spaces.
+\end{remark}
+
+\begin{theorem}
+	$\simpro_{\ucp}$ is dense in $\cagspace_{\ucp}$.
+\end{theorem}
+\begin{proof}
+	We first show $\bdd \cagspace_{\ucp}$ is dense in $\cagspace_{\ucp}$. Given any $X \in \cagspace$ let
+	\begin{equation}
+		X^n_t \defeq X_{t \wedge \tau_n} \indi_{\tau_n > 0} \quad \text{where}\ \tau_n := \inf \{t \geq 0 : X_t > n\}.
+	\end{equation}
+	By left continuity, $\sup_{t \geq 0} \abs{X^n_t} \leq n$. The purpose of the indicator is for the case where $X_0 \geq n$. Then
+	\begin{align}
+		\prob(\abs{X^n - X}^*_t > 0)
+		= \prob(\tau_n < t) \to 0 \quad \text{as $n \to \infty$}
+	\end{align}
+	since \caglad{} processes are bounded on bounded interval
+\end{proof}
+
+Since $S_{\ucp}$ is dense in $\cadspace_{\ucp}$, $\cagspace_{\ucp}$ is a completely metrizable space and $J_X: \simpro_{\ucp} \to \cagspace_{\ucp}$ is continuous, we can extend it to a continuous operator $J_X: \cagspace_{\ucp} \to \cadspace_{\ucp}$.
+
+Properties
+\begin{align}
+	\Delta(\int H \dif X)_t &= H_t \Delta X_t \\
+	\int H (\int G \dif X) &= \int HG \dif X
+\end{align}
+
+\begin{theorem}
+	If $X$ is of finite variation, then the integral agrees with the Lebesgue-Stieljes integration.
+\end{theorem}
+
+\begin{theorem}
+	Let $X$ be a semimartingale. Let $H \in \cagspace \cup \cadspace$.
+	\begin{equation}
+		\Pi_n = \left\{ \tau_1^n, \ldots, \tau_{k_n+1}^n \right\}
+	\end{equation}
+	be a sequence of random partitions tending to the identity:
+	\begin{enumerate}
+		\item $\limsup_{n \to \infty} \sup_{i = 1, \ldots, k_n + 1} \tau^n_i = \infty$ almost surely
+		\item The mesh tends to 0 almost surely
+	\end{enumerate}
+	Then
+	\begin{equation}
+		\int_0^{\cdot} H_{s-} \dif X_s =
+		\text{lim ucp}_{n \to \infty}
+		\sum_{i=1}^{k_n} H_{\tau^n_i}(X^{\tau^n_{i+1}}_{\cdot} - X^{\tau^n_i}_{\cdot})
+	\end{equation}
+\end{theorem}
+
+\end{document}
