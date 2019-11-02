@@ -1,49 +1,45 @@
 \documentclass{scrreprt}
 
 \usepackage{mathshort2}
-\usepackage{amsthm}
 \usepackage{varioref}
 \usepackage[hidelinks]{hyperref}
 \usepackage{cleveref}
+
+
+% Setting up theorem, claim, proof, etc. environments
+\usepackage{thmtools}
+\usepackage{thm-restate}
+
+\usepackage{varioref}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+
 \usepackage{mdframed}
 
-\newtheoremstyle{mydefn}% name of the style to be used
-  {\topsep}% measure of space to leave above the theorem. E.g.: 3pt
-  {\topsep}% measure of space to leave below the theorem. E.g.: 3pt
-  {}% name of font to use in the body of the theorem
-  {0pt}% measure of space to indent
-  {\bfseries}% name of head font
-  {. }% punctuation between head and body
-  { }% space after theorem head; " " = normal interword space
-  {\thmname{#1}\thmnumber{ #2}\thmnote{ (#3)}}
+\declaretheorem[name=Definition, numberwithin=chapter, thmbox=M]{defn}
+\declaretheorem[name=Theorem, thmbox=M, sibling=defn]{theorem}
+\declaretheorem[name=Lemma, thmbox=M]{lemma}
+\declaretheorem[
+	name=Proposition,
+	refname={proposition, propositions},
+	Refname={Proposition, Propositions},
+	thmbox=M,
+	sibling=defn]{prop}
+\declaretheorem[name=Corollary, thmbox=M, sibling=defn]{corollary}
 
-\theoremstyle{mydefn}
+\usepackage{amsthm}
 
-\newtheorem{defn}{Definition}
-
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}{Lemma}
-\newtheorem{prop}{Proposition}
-\newtheorem{corollary}{Corollary}
+\newtheorem{claim}{Claim}
 
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
 
-\mdfdefinestyle{MyFrame}{
-	topline=false,
-	rightline=false,
-	leftline=true,
-	bottomline=false,
-	linewidth=0.05em,
-	innertopmargin=0,
-	innerbottommargin=0,
-	leftmargin=\parindent
+\newenvironment{subproof}[1][\proofname]{%
+  \renewcommand{\qedsymbol}{$\blacksquare$}%
+  \begin{proof}[#1]%
+}{%
+  \end{proof}%
 }
-
-\surroundwithmdframed[style=MyFrame]{defn}
-\surroundwithmdframed[style=MyFrame]{theorem}
-\surroundwithmdframed[style=MyFrame]{prop}
-\surroundwithmdframed[style=MyFrame]{corollary}
 
 \newcommand{\caglad}{c\`agl\`ad}
 \newcommand{\simpro}{\mathbf S}
@@ -416,4 +412,89 @@ Properties
 	\end{equation}
 \end{theorem}
 
+\section{Quadratic Variation}
+
+\begin{defn}
+	If $X$ and $Y$ are semimartingales then
+	\begin{align}
+		[X]_t &\defeq X_t^2 - 2\int_0^t X_{s-} \dif X_s \\
+		[X, Y]_t &\defeq X_t Y_t \int_0^t X_{s-} \dif Y_s - \int_0^t Y_{s-} \dif X_s
+	\end{align}
+\end{defn}
+\begin{remark}
+	This definition can be motivated by integration by parts. Note $[\cdot]$ will be different from $\ang{\cdot}$.
+\end{remark}
+
+\begin{prop}
+	If $X$ is continuous and FV, then $[X] = X_0^2$
+\end{prop}
+\begin{proof}
+	Lebesgue-Stieljes theory and continuity gives $\int_0^t X_{s-} \dif X_s = \int_0^t X_s \dif X_s = \frac{1}{2}(X_t^2 - X_0^2)$
+\end{proof}
+
+\begin{theorem}
+	If $X \in \cadspace$ is a semimartingale, then $[X] \in \cadspace$ and
+	\begin{enumerate}
+		\item $[X]_0 = X_0^2$, $\Delta [X] = (\Delta X)^2$
+		\item If $\Pi^n = \{\tau_1^n, \ldots, \tau_{k_n + 1}^n\}$ is a sequence of random partitions tending to identity then
+			\begin{equation}
+				X_0^2 + \sum_{i-1}^{k_n} (X^{\tau^n_{i+1}} - X^{\tau^n_i})^2 \to [X]
+			\end{equation}
+			u.c.p.\ as $n \to \infty$.
+		\item $[X]$ is F.V.
+		\item $[X]^{\tau} = [X^{\tau}] = [X^{\tau}, X]$ for all stopping times $\tau$
+	\end{enumerate}
+\end{theorem}
+\begin{proof}
+	By definition it is the sume of two \cadlag{} functions. 
+	\begin{align}
+		(\Delta X_t)^2
+		&= (X_t - X_{t-})^2
+		= X_t^2 + X_{t-}^2 - 2X_t X_{t-} \\
+		&= (X_t^2 - X_{t-}^2) - 2X_{t-}(X_t - X_{t-})
+		= \Delta X^2_t - 2X_{t-} \Delta X_t \\
+		&= \Delta X_t^2 - 2 \Delta \left(\int X_{\cdot -} \dif X\right)_t 
+		= \Delta[X]_t
+	\end{align}
+
+	WLOG $X_0 = 0$
+	\begin{align}
+		(X^{\tau^n_{i+1}} - X^{\tau^n_i})^2
+		&= (X^{\tau^n_{i+1}})^2 - (X_t^{\tau^n_i})^2 - 2X_t^{\tau^n_i}(X^{\tau^n_{i+1}} - X^{\tau^n_i}) \\
+		\sum &= (X^{\tau^n_{k_n + 1}})^2 - 2 \sum_{i=1}^{k_n} X_{\tau_i}(X_t^{\tau_{i+1}} - X^{\tau^n_i}) \\
+		\to [X]
+	\end{align}
+	u.c.p.\
+\end{proof}
+
+\begin{prop}[Kunita-Watanabe Inequality]
+	\begin{equation}
+		\int \abs{H} \abs{G} \abs{d[X, Y]} 
+		\leq \left(\int \abs{H}^2 \dif [X]\right)^{1/2}
+		\left( \int \abs{G}^2 \dif [X]\right)^{1/2}
+	\end{equation}
+	\begin{equation}
+		\left[\int H \dif X, \int G \dif Y\right] = \int HG \dif [X, Y]
+	\end{equation}
+\end{prop}
+
+\begin{prop}[Lebesgue Stieljes]
+	Let $t \mapsto A_t$ be right-continuous and GV (on compact). If $f \in C^1(\R)$ then
+	\begin{equation}
+		f(A_t) - f(A_0) = \int_{(0, t]} f'(A_s') \dif A_s + \sum_{0 < s \leq t}(\Delta A_s - f'(A_s) \Delta A_s)
+	\end{equation}
+\end{prop}
+
+\begin{prop}[Pure jump quadratic variation]
+	\begin{enumerate}
+		\item If $A \in \calD$ is FV, then $[A]$ is purely discontinuous (pure jump) with
+			\begin{equation}
+				[A]_t = [A]_0 + \sum_{0 < s \leq t} (\Delta A_t)^2
+			\end{equation}
+		\item If $X, Y$ are semimartingales and $[Y]^c = 0$, then
+			\begin{equation}
+				[X, Y] = [X, Y]_0 + \sum_{0 < s \leq t} \Delta X_s \Delta Y_s
+			\end{equation}
+	\end{enumerate}
+\end{prop}
 \end{document}
